@@ -10,6 +10,8 @@
 Module.register("energy", {
 	defaults: {
 		updateInterval: 120000,
+		graphHeight: 150,
+		graphWidth: 300,
 		retryDelay: 5000
 	},
 
@@ -39,7 +41,6 @@ Module.register("energy", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = "https://api.energyzero.nl/v1/energyprices?fromDate=2023-05-13T22%3A00%3A00.000Z&tillDate=2023-05-15T21%3A59%3A59.999Z&interval=4&usageType=1&inclBtw=true";
 		var urlApi = "https://api.energyzero.nl/v1/energyprices?"
 		var endingApi = "&interval=4&usageType=1&inclBtw=true" 
 		var retry = true;
@@ -52,7 +53,7 @@ Module.register("energy", {
 		urlApi = urlApi + "fromDate=" + today.toJSON()
 		urlApi = urlApi + "&tillDate=" + tomorrow.toJSON()
 		urlApi = urlApi + endingApi
-		console.log (urlApi)
+
 		var dataRequest = new XMLHttpRequest();
 		dataRequest.open("GET", urlApi, true);
 		console.log ('requested');
@@ -113,27 +114,24 @@ Module.register("energy", {
 			var labelDataRequest = document.createElement("label");
 			// Use translate function
 			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("Energy price chart");
+			labelDataRequest.innerHTML = this.translate("Energy price");
 
 
 			wrapper.appendChild(labelDataRequest);
 			wrapper.appendChild(wrapperDataRequest);
-//		}
 
 
-// it was me
 		console.log ('recharting...');
 		wrapper.appendChild(this.renderGraph());
 		}
-//That's it
 
 
 		// Data from helper
 		if (this.dataNotification) {
 			var wrapperDataNotification = document.createElement("div");
 			// translations  + datanotification
-			wrapperDataNotification.innerHTML =  this.dataRequest.Prices[0].readingDate;
-
+			//wrapperDataNotification.innerHTML =  this.dataRequest.Prices[0].readingDate;
+			wrapperDataNotification.innerHTML = new Date().toLocaleTimeString();
 			wrapper.appendChild(wrapperDataNotification);
 		}
 		return wrapper;
@@ -168,26 +166,14 @@ Module.register("energy", {
     		element.width  = width;
     		element.height = height;
     		var context = element.getContext('2d');
-
+		const startY = height / 2;
     		var smallStep = Math.floor(width/24);
     		context.save();
     		context.strokeStyle = 'gray';
     		context.lineWidth = 2;
     		for (i = 1; i < 24; i++) {
-      			context.moveTo(i * smallStep, height);
-      			context.lineTo(i * smallStep, height - 10);
-      			context.stroke();
-    			}
-    		context.restore();
-
-    		var largeStep = Math.floor(width/2);
-    		context.save();
-    		context.strokeStyle = 'gray';
-    		context.setLineDash([5, 15]);
-    		context.lineWidth = 1;
-    		for (i = 1; i < 2; i++) {
-      			context.moveTo(0, i * largeStep);
-      			context.lineTo(width, i * largeStep);
+      			context.moveTo(i * smallStep, startY + 5);
+      			context.lineTo(i * smallStep, startY - 5);
       			context.stroke();
     			}
     		context.restore();
@@ -198,16 +184,11 @@ Module.register("energy", {
     		context.strokeStyle = 'white';
     		context.fillStyle = 'white';
     		context.globalCompositeOperation = 'xor';
-		context.lineWidth = 3;
 
-//    		context.beginPath();
-//    		context.moveTo(0, height);
     		var threshold = 0.01;
-		//replace with this.config.precipitationProbabilityThreshold;
     		var price;
+		var curPrice=0;
 		var maxPrice = 0.2;
-		const startY = height / 2;
-    		// figure out how we're going to scale our graph
   
 
   		for (i = 0; i < data.length; i++) {
@@ -215,27 +196,23 @@ Module.register("energy", {
     			}
 
 
-    		// if current intensity is above our normal scale top, make that the top
-    		//if (maxIntensity < 0.2) {
-		//replace with this.config.precipitationIntensityScaleTop) {
-      		//	maxIntensity = this.config.priceTop;
-    		//	}
 		var startHour = new Date();
 		startHour.setMinutes(0,0,0);
     		for (i = 0; i < data.length; i++) {
         			price = startY * (data[i].price / maxPrice);
 				if (new Date(data[i].readingDate).getHours() === startHour.getHours()) { 
-					console.log (i*stepSize, 0, stepSize, height);
-					context.strokeStyle="lime"; context.strokeRect(i*stepSize, 0, stepSize, height);
+					context.lineWidth = 3;
+					context.strokeStyle="lime"; 
+					context.strokeRect(i*stepSize, 0, stepSize, height);
+					context.font = "20px serif";
+					curPrice = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(data[i].price);
 					}
-      				//context.lineTo(i * stepSize, height - price);
 				context.fillRect(i*stepSize,startY,stepSize,-price);
     				}
-    		context.lineTo(width, height);
-    		context.closePath();
-    		context.fill();
+		context.fillStyle = 'lime';
+    		context.fillText(curPrice,width/2-30,height);
+		context.fill();
     		context.restore();
-		console.log (data[0].readingDate);
 
     		return element;
   		},
