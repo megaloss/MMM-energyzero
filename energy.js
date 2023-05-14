@@ -114,7 +114,7 @@ Module.register("energy", {
 			var labelDataRequest = document.createElement("label");
 			// Use translate function
 			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("Energy price");
+			labelDataRequest.innerHTML = this.translate("Electricity per kwh");
 
 
 			wrapper.appendChild(labelDataRequest);
@@ -176,8 +176,14 @@ Module.register("energy", {
       			context.lineTo(i * smallStep, startY - 5);
       			context.stroke();
     			}
-    		context.restore();
-
+//    		context.restore();
+		smallStep = Math.floor (height/20)
+                for (i = 1; i < 20; i++) {
+                        context.moveTo(0, i * smallStep);
+                        context.lineTo(5, i * smallStep);
+                        context.stroke();
+                        }
+                context.restore();
     		var data = this.dataRequest.Prices;
     		var stepSize = Math.round(width / data.length);
     		context.save();
@@ -210,7 +216,12 @@ Module.register("energy", {
 				context.fillRect(i*stepSize,startY,stepSize,-price);
     				}
 		context.fillStyle = 'lime';
-    		context.fillText(curPrice,width/2-30,height);
+    		context.fillText(curPrice,width/2-40,height);
+		context.fillStyle = 'white';
+		context.font = "14px serif";
+                context.fillText(maxPrice.toLocaleString(undefined, {minimumFractionDigits : 2}),10,10);
+		context.font = "14px serif";
+                context.fillText("0.00",10,startY+16);
 		context.fill();
     		context.restore();
 
