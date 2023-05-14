@@ -47,10 +47,12 @@ Module.register("energy", {
 		const today = new Date();
 		today.setHours(0,0,0,0);
 		let tomorrow = new Date();
+		tomorrow.setHours(0,0,0,0);
 		tomorrow.setDate(today.getDate() + 1);
 		urlApi = urlApi + "fromDate=" + today.toJSON()
 		urlApi = urlApi + "&tillDate=" + tomorrow.toJSON()
 		urlApi = urlApi + endingApi
+		console.log (urlApi)
 		var dataRequest = new XMLHttpRequest();
 		dataRequest.open("GET", urlApi, true);
 		console.log ('requested');
@@ -196,12 +198,15 @@ Module.register("energy", {
     		context.strokeStyle = 'white';
     		context.fillStyle = 'white';
     		context.globalCompositeOperation = 'xor';
+		context.lineWidth = 3;
+
 //    		context.beginPath();
 //    		context.moveTo(0, height);
     		var threshold = 0.01;
 		//replace with this.config.precipitationProbabilityThreshold;
     		var price;
 		var maxPrice = 0.2;
+		const startY = height / 2;
     		// figure out how we're going to scale our graph
   
 
@@ -218,13 +223,13 @@ Module.register("energy", {
 		var startHour = new Date();
 		startHour.setMinutes(0,0,0);
     		for (i = 0; i < data.length; i++) {
-        			price = height * (data[i].price / maxPrice);
+        			price = startY * (data[i].price / maxPrice);
 				if (new Date(data[i].readingDate).getHours() === startHour.getHours()) { 
-					console.log ("Gotcha !");
-					context.strokeStyle="green"; context.strokeRect(i*stepSize, height, stepSize, height);
+					console.log (i*stepSize, 0, stepSize, height);
+					context.strokeStyle="lime"; context.strokeRect(i*stepSize, 0, stepSize, height);
 					}
       				//context.lineTo(i * stepSize, height - price);
-				context.fillRect(i*stepSize,height,stepSize,-price);
+				context.fillRect(i*stepSize,startY,stepSize,-price);
     				}
     		context.lineTo(width, height);
     		context.closePath();
